@@ -1,0 +1,42 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const promises_1 = require("fs/promises");
+const process_1 = require("process");
+const chip_ts_1 = require("../chip-ts");
+const terminal_input_1 = require("./terminal-input");
+const terminal_renderer_1 = require("./terminal-renderer");
+const terminal_sound_1 = require("./terminal-sound");
+async function main() {
+    const renderer = new terminal_renderer_1.TerminalRenderer(process_1.stdout);
+    const input = new terminal_input_1.TerminalInput(process_1.stdin);
+    const sound = new terminal_sound_1.TerminalSound(process_1.stdout);
+    // sound.play();
+    // sound.play();
+    // await delay(1000);
+    // sound.play();
+    // const array = new BitArray(DISPLAY_SIZE);
+    // array.xor(0, 1);
+    // array.xor(1, 1);
+    // array.xor(2, 1);
+    // array.xor(3, 1);
+    // array.xor(4, 0);
+    // array.xor(5, 0);
+    // array.xor(6, 0);
+    // array.xor(7, 0);
+    // await renderer.init();
+    // await renderer.draw(array);
+    // array.xor(0, 1);
+    // array.xor(1, 1);
+    // array.xor(2, 1);
+    // array.xor(3, 1);
+    // array.xor(4, 0);
+    // array.xor(5, 0);
+    // array.xor(6, 0);
+    // array.xor(7, 0);
+    // await renderer.draw(array);
+    const filename = process.argv[2] ?? 'chip8-test-suite.ch8';
+    const program = await (0, promises_1.readFile)(filename, null);
+    await (0, chip_ts_1.run)({ program, renderer, input, sound });
+}
+main();
+//# sourceMappingURL=chip-ts-terminal.js.map
