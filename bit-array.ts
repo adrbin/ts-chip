@@ -8,6 +8,13 @@ export class BitArray {
     this.array = new Uint8Array(Math.ceil(length));
   }
 
+  static copy(bitArray: BitArray) {
+    const newBitArray = new BitArray(bitArray.array.length);
+    newBitArray.array = new Uint8Array(bitArray.array);
+
+    return newBitArray;
+  }
+
   get(index: number) {
     const [index1, index2] = this.getIndexes(index);
     return getNthBit(this.array[index1], index2);

@@ -13,7 +13,9 @@ export function getLowerNibble(byte: number) {
 }
 
 export function toHex(nibbles: number[]) {
-  return nibbles.map(nibble => nibble.toString(16)).join('');
+  return `0x${nibbles
+    .map(nibble => nibble.toString(16).toUpperCase())
+    .join('')}`;
 }
 
 export function joinNibbles(nibbles: number[]) {
@@ -43,4 +45,35 @@ export function getBcd(n: number, digits: number) {
   }
 
   return stack.reverse();
+}
+
+export function createByte(bits: number[]) {
+  return parseInt(bits.join(''), 2);
+}
+
+export function doubleByte(byte: number) {
+  let bits: number[] = [];
+  for (let i = 0; i < BYTE_LENGTH; i++) {
+    const bit = getNthBit(byte, i);
+    bits.push(bit, bit);
+  }
+
+  return [
+    createByte(bits.slice(0, BYTE_LENGTH)),
+    createByte(bits.slice(BYTE_LENGTH)),
+  ];
+}
+
+export function matchInstruction(nibbles: number[], pattern: string) {
+  for (let i = 0; i < pattern.length; i++) {
+    if (
+      pattern[i].toLowerCase() === 'x' ||
+      nibbles[i].toString(16) === pattern[i].toLowerCase()
+    ) {
+      continue;
+    }
+    return false;
+  }
+
+  return true;
 }

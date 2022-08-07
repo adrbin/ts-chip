@@ -7,6 +7,11 @@ class BitArray {
     constructor(length) {
         this.array = new Uint8Array(Math.ceil(length));
     }
+    static copy(bitArray) {
+        const newBitArray = new BitArray(bitArray.array.length);
+        newBitArray.array = new Uint8Array(bitArray.array);
+        return newBitArray;
+    }
     get(index) {
         const [index1, index2] = this.getIndexes(index);
         return (0, utils_1.getNthBit)(this.array[index1], index2);

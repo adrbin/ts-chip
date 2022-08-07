@@ -1,48 +1,58 @@
+import { Console } from 'console';
+import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
 import { stdin, stdout } from 'process';
-import { BitArray } from '../bit-array';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import { run } from '../chip-ts';
-import { DISPLAY_SIZE } from '../constants';
-import { delay } from '../utils';
+import { Chip8Vm } from '../chip8-vm';
+import { SuperChip48Vm } from '../super-chip48-vm';
+import { FileStorage } from './file-storage';
 import { TerminalInput } from './terminal-input';
 import { TerminalRenderer } from './terminal-renderer';
 import { TerminalSound } from './terminal-sound';
 
 async function main() {
-  const renderer = new TerminalRenderer(stdout);
-  const input = new TerminalInput(stdin);
+  const argv = await getArgv();
+
+  const renderer = new TerminalRenderer({
+    output: stdout,
+    shouldLimitFrame: argv.mode === 'chip-8',
+  });
   const sound = new TerminalSound(stdout);
+  const input = new TerminalInput(stdin);
+  const consoleStream = createWriteStream(`${argv.load}.log`);
+  const logger = new Console(consoleStream, consoleStream);
+  const storage = new FileStorage(`${argv.load}.state`);
 
-  // sound.play();
-  // sound.play();
-  // await delay(1000);
-  // sound.play();
+  const program = await readFile(argv.load);
 
-  // const array = new BitArray(DISPLAY_SIZE);
-  // array.xor(0, 1);
-  // array.xor(1, 1);
-  // array.xor(2, 1);
-  // array.xor(3, 1);
-  // array.xor(4, 0);
-  // array.xor(5, 0);
-  // array.xor(6, 0);
-  // array.xor(7, 0);
-  // await renderer.init();
-  // await renderer.draw(array);
-  // array.xor(0, 1);
-  // array.xor(1, 1);
-  // array.xor(2, 1);
-  // array.xor(3, 1);
-  // array.xor(4, 0);
-  // array.xor(5, 0);
-  // array.xor(6, 0);
-  // array.xor(7, 0);
-  // await renderer.draw(array);
+  const vmClass = argv.mode === 'chip-8' ? Chip8Vm : SuperChip48Vm;
+  const vm = new vmClass({ program, input, logger, storage });
 
-  const filename = process.argv[2] ?? 'chip8-test-suite.ch8';
-  const program = await readFile(filename, null);
+  await run({ vm, renderer, sound });
+}
 
-  await run({ program, renderer, input, sound });
+function getArgv() {
+  return yargs(hideBin(process.argv))
+    .options({
+      load: {
+        alias: 'l',
+        type: 'string',
+        description: 'Load a rom',
+        default: 'roms/chip8-test-suite.ch8',
+      },
+      mode: {
+        alias: 'm',
+        type: 'string',
+        description:
+          'Choose a compatibility mode to run: chip-8 (default) or schip',
+        default: 'chip-8',
+      },
+    })
+    .usage(
+      'Chip-ts\nA Chip-8 and Super Chip-48 interpreter written in TypeScript',
+    ).argv;
 }
 
 main();

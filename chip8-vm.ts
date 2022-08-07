@@ -1,16 +1,16 @@
-import { BitArray } from './bit-array';
 import {
   BYTE_LENGTH,
   BYTE_SIZE,
   DISPLAY_HEIGHT,
-  DISPLAY_SIZE,
   DISPLAY_WIDTH,
   FLAG_REGISTER,
   FONT_DATA,
+  FONT_DATA_START,
   MEMORY_SIZE,
   PROGRAM_START,
   REGISTER_COUNT,
 } from './constants';
+import { createDisplay } from './display';
 import {
   getBcd,
   getHigherNibble,
@@ -18,16 +18,17 @@ import {
   getNthBit,
   getRandomInt,
   joinNibbles,
+  matchInstruction,
   mod,
   toHex,
 } from './utils';
 
-type InstructionArray = [number, number, number, number];
+export type InstructionArray = [number, number, number, number];
 
-interface InstructionCondition {
-  condition: (instruction: InstructionArray) => boolean;
-  operation: (instruction: InstructionArray) => Promise<void> | void;
-}
+export type InstructionCondition = [
+  (instruction: InstructionArray) => boolean,
+  (instruction: InstructionArray) => Promise<void> | void,
+];
 
 export type InputCallback = () => Set<number>;
 export type WaitInputCallback = () => Promise<number>;
@@ -37,15 +38,21 @@ export interface Input {
   waitInput: WaitInputCallback;
 }
 
+export interface Storage {
+  save: (data: any) => Promise<void>;
+  load: () => Promise<any>;
+}
+
 export interface VmParams {
   program: Buffer;
   input: Input;
   logger?: Console;
+  storage?: Storage;
 }
 
-export class Vm {
+export class Chip8Vm {
   memory = new Uint8Array(MEMORY_SIZE);
-  display = new BitArray(DISPLAY_SIZE);
+  display = createDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   registers = new Uint8Array(REGISTER_COUNT);
   registerI = 0;
   delayTimer = 0;
@@ -53,168 +60,61 @@ export class Vm {
   pc = PROGRAM_START;
   sp = -1;
   stack: number[] = [];
-  logger?: Console;
+  isHalted = false;
   input: Input;
+  logger?: Console;
+  storage?: Storage;
 
   operations: InstructionCondition[] = [
-    {
-      condition: instruction => toHex(instruction) === '00e0',
-      operation: this.clear,
-    },
-    {
-      condition: instruction => toHex(instruction) === '00ee',
-      operation: this.return,
-    },
-    {
-      condition: instruction => instruction[0] === 1,
-      operation: this.jumpAddress,
-    },
-    {
-      condition: instruction => instruction[0] === 2,
-      operation: this.call,
-    },
-    {
-      condition: instruction => instruction[0] === 3,
-      operation: this.skipEqualValue,
-    },
-    {
-      condition: instruction => instruction[0] === 4,
-      operation: this.skipNotEqualValue,
-    },
-    {
-      condition: instruction => instruction[0] === 5,
-      operation: this.skipEqualRegister,
-    },
-    {
-      condition: instruction => instruction[0] === 6,
-      operation: this.loadValue,
-    },
-    {
-      condition: instruction => instruction[0] === 7,
-      operation: this.add,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 0,
-      operation: this.loadRegister,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 1,
-      operation: this.or,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 2,
-      operation: this.and,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 3,
-      operation: this.xor,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 4,
-      operation: this.addCarry,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 5,
-      operation: this.sub,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 6,
-      operation: this.shiftRight,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 7,
-      operation: this.subNegative,
-    },
-    {
-      condition: instruction => instruction[0] === 8 && instruction[3] === 0xe,
-      operation: this.shiftLeft,
-    },
-    {
-      condition: instruction => instruction[0] === 9,
-      operation: this.skipNotEqualRegister,
-    },
-    {
-      condition: instruction => instruction[0] === 0xa,
-      operation: this.loadI,
-    },
-    {
-      condition: instruction => instruction[0] === 0xb,
-      operation: this.jumpRelativeAddress,
-    },
-    {
-      condition: instruction => instruction[0] === 0xc,
-      operation: this.random,
-    },
-    {
-      condition: instruction => instruction[0] === 0xd,
-      operation: this.draw,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xe &&
-        instruction[2] === 9 &&
-        instruction[3] === 0xe,
-      operation: this.skipPressed,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xe &&
-        instruction[2] === 0xa &&
-        instruction[3] === 1,
-      operation: this.skipNotPressed,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf && instruction[2] === 0 && instruction[3] === 7,
-      operation: this.loadDelayTimer,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf &&
-        instruction[2] === 0 &&
-        instruction[3] === 0xa,
-      operation: this.waitPressed,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf && instruction[2] === 1 && instruction[3] === 5,
-      operation: this.setDelayTimer,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf && instruction[2] === 1 && instruction[3] === 8,
-      operation: this.setSoundTimer,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf &&
-        instruction[2] === 1 &&
-        instruction[3] === 0xe,
-      operation: this.addI,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf && instruction[2] === 2 && instruction[3] === 9,
-      operation: this.loadISprite,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf && instruction[2] === 3 && instruction[3] === 3,
-      operation: this.loadIBcd,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf && instruction[2] === 5 && instruction[3] === 5,
-      operation: this.loadIRegisters,
-    },
-    {
-      condition: instruction =>
-        instruction[0] === 0xf && instruction[2] === 6 && instruction[3] === 5,
-      operation: this.loadRegistersI,
-    },
+    [instruction => matchInstruction(instruction, '00e0'), this.clear],
+    [instruction => matchInstruction(instruction, '00EE'), this.return],
+    [instruction => matchInstruction(instruction, '1xxx'), this.jumpAddress],
+    [instruction => matchInstruction(instruction, '2xxx'), this.call],
+    [instruction => matchInstruction(instruction, '3xxx'), this.skipEqualValue],
+    [
+      instruction => matchInstruction(instruction, '4xxx'),
+      this.skipNotEqualValue,
+    ],
+    [
+      instruction => matchInstruction(instruction, '5xxx'),
+      this.skipEqualRegister,
+    ],
+    [instruction => matchInstruction(instruction, '6xxx'), this.loadValue],
+    [instruction => matchInstruction(instruction, '7xxx'), this.add],
+    [instruction => matchInstruction(instruction, '8xx0'), this.loadRegister],
+    [instruction => matchInstruction(instruction, '8xx1'), this.or],
+    [instruction => matchInstruction(instruction, '8xx2'), this.and],
+    [instruction => matchInstruction(instruction, '8xx3'), this.xor],
+    [instruction => matchInstruction(instruction, '8xx4'), this.addCarry],
+    [instruction => matchInstruction(instruction, '8xx5'), this.sub],
+    [instruction => matchInstruction(instruction, '8xx6'), this.shiftRight],
+    [instruction => matchInstruction(instruction, '8xx7'), this.subNegative],
+    [instruction => matchInstruction(instruction, '8xxE'), this.shiftLeft],
+    [
+      instruction => matchInstruction(instruction, '9xxx'),
+      this.skipNotEqualRegister,
+    ],
+    [instruction => matchInstruction(instruction, 'Axxx'), this.loadI],
+    [
+      instruction => matchInstruction(instruction, 'Bxxx'),
+      this.jumpRelativeAddress,
+    ],
+    [instruction => matchInstruction(instruction, 'Cxxx'), this.random],
+    [instruction => matchInstruction(instruction, 'Dxxx'), this.draw],
+    [instruction => matchInstruction(instruction, 'Ex9E'), this.skipPressed],
+    [instruction => matchInstruction(instruction, 'ExA1'), this.skipNotPressed],
+    [instruction => matchInstruction(instruction, 'Fx07'), this.loadDelayTimer],
+    [instruction => matchInstruction(instruction, 'Fx0A'), this.waitPressed],
+    [instruction => matchInstruction(instruction, 'Fx15'), this.setDelayTimer],
+    [instruction => matchInstruction(instruction, 'Fx18'), this.setSoundTimer],
+    [instruction => matchInstruction(instruction, 'Fx1E'), this.addI],
+    [instruction => matchInstruction(instruction, 'Fx29'), this.loadISprite],
+    [instruction => matchInstruction(instruction, 'Fx33'), this.loadIBcd],
+    [instruction => matchInstruction(instruction, 'Fx55'), this.loadIRegisters],
+    [instruction => matchInstruction(instruction, 'Fx65'), this.loadRegistersI],
   ];
 
-  constructor({ program, input, logger }: VmParams) {
+  constructor({ program, input, logger, storage }: VmParams) {
     for (let i = 0; i < FONT_DATA.length; i++) {
       this.memory[i] = FONT_DATA[i];
     }
@@ -225,13 +125,13 @@ export class Vm {
 
     this.input = input;
     this.logger = logger;
+    this.storage = storage;
   }
 
   async executeInstruction() {
     const instruction = this.fetchInstruction();
-    const operation = this.operations.find(({ condition }) =>
-      condition(instruction),
-    )?.operation;
+    const [_, operation] =
+      this.operations.find(([condition]) => condition(instruction)) ?? [];
 
     if (!operation) {
       this.logger?.warn('Unknown instruction: ', toHex(instruction));
@@ -242,7 +142,11 @@ export class Vm {
   }
 
   fetchInstruction(): InstructionArray {
-    if (this.pc >= MEMORY_SIZE) {
+    if (this.isHalted) {
+      throw new Error('The program is halted.');
+    }
+
+    if (this.pc >= MEMORY_SIZE - 1) {
       throw new Error('Program counter has reached the end of the memory.');
     }
     const byte1 = this.memory[this.pc++];
@@ -256,7 +160,7 @@ export class Vm {
   }
 
   clear() {
-    this.display = new BitArray(DISPLAY_WIDTH * DISPLAY_HEIGHT);
+    this.display = createDisplay(this.display.width, this.display.height);
   }
 
   return() {
@@ -326,54 +230,61 @@ export class Vm {
     const register1 = instruction[1];
     const register2 = instruction[2];
     this.registers[register1] |= this.registers[register2];
+    this.registers[FLAG_REGISTER] = 0;
   }
 
   and(instruction: InstructionArray) {
     const register1 = instruction[1];
     const register2 = instruction[2];
     this.registers[register1] &= this.registers[register2];
+    this.registers[FLAG_REGISTER] = 0;
   }
 
   xor(instruction: InstructionArray) {
     const register1 = instruction[1];
     const register2 = instruction[2];
     this.registers[register1] ^= this.registers[register2];
+    this.registers[FLAG_REGISTER] = 0;
   }
 
   addCarry(instruction: InstructionArray) {
     const register1 = instruction[1];
     const register2 = instruction[2];
     const sum = this.registers[register1] + this.registers[register2];
-    this.registers[FLAG_REGISTER] = sum >= BYTE_SIZE ? 1 : 0;
     this.registers[register1] = mod(sum, BYTE_SIZE);
+    this.registers[FLAG_REGISTER] = sum >= BYTE_SIZE ? 1 : 0;
   }
 
   sub(instruction: InstructionArray) {
     const register1 = instruction[1];
     const register2 = instruction[2];
     const difference = this.registers[register1] - this.registers[register2];
-    this.registers[FLAG_REGISTER] = difference > 0 ? 1 : 0;
     this.registers[register1] = mod(difference, BYTE_SIZE);
+    this.registers[FLAG_REGISTER] = difference > 0 ? 1 : 0;
   }
 
   shiftRight(instruction: InstructionArray) {
-    const register = instruction[1];
-    this.registers[FLAG_REGISTER] = this.registers[register] & 1;
-    this.registers[register] >>= 1;
+    const register1 = instruction[1];
+    const register2 = instruction[2];
+    const flag = this.registers[register2] & 1;
+    this.registers[register1] = this.registers[register2] >> 1;
+    this.registers[FLAG_REGISTER] = flag;
   }
 
   subNegative(instruction: InstructionArray) {
     const register1 = instruction[1];
     const register2 = instruction[2];
     const difference = this.registers[register2] - this.registers[register1];
-    this.registers[FLAG_REGISTER] = difference > 0 ? 1 : 0;
     this.registers[register1] = mod(difference, BYTE_SIZE);
+    this.registers[FLAG_REGISTER] = difference > 0 ? 1 : 0;
   }
 
   shiftLeft(instruction: InstructionArray) {
-    const register = instruction[1];
-    this.registers[FLAG_REGISTER] = getNthBit(this.registers[register], 0);
-    this.registers[register] = (this.registers[register] << 1) & 0xff;
+    const register1 = instruction[1];
+    const register2 = instruction[2];
+    const flag = getNthBit(this.registers[register2], 0);
+    this.registers[register1] = (this.registers[register2] << 1) & 0xff;
+    this.registers[FLAG_REGISTER] = flag;
   }
 
   skipNotEqualRegister(instruction: InstructionArray) {
@@ -401,8 +312,8 @@ export class Vm {
   }
 
   draw(instruction: InstructionArray) {
-    const originX = mod(this.registers[instruction[1]], DISPLAY_WIDTH);
-    const originY = mod(this.registers[instruction[2]], DISPLAY_HEIGHT);
+    const originX = mod(this.registers[instruction[1]], this.display.width);
+    const originY = mod(this.registers[instruction[2]], this.display.height);
     const height = instruction[3];
 
     let isCollision = false;
@@ -412,15 +323,15 @@ export class Vm {
       for (let dx = 0; dx < BYTE_LENGTH; dx++) {
         const x = originX + dx;
         const y = originY + dy;
-        if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) {
+        if (x >= this.display.width || y >= this.display.height) {
           continue;
         }
         const spriteValue = getNthBit(spriteByte, dx);
-        const currentCollision = this.display.xor(
-          y * DISPLAY_WIDTH + x,
+        const isCurrentCollision = this.display.display.xor(
+          y * this.display.width + x,
           spriteValue,
         );
-        isCollision ||= currentCollision;
+        isCollision ||= isCurrentCollision;
       }
     }
 
@@ -474,7 +385,7 @@ export class Vm {
 
   loadISprite(instruction: InstructionArray) {
     const register = instruction[1];
-    this.registerI = this.registers[register] * 5;
+    this.registerI = FONT_DATA_START + this.registers[register] * 5;
   }
 
   loadIBcd(instruction: InstructionArray) {
@@ -490,7 +401,7 @@ export class Vm {
     let maxRegister = instruction[1];
 
     for (let i = 0; i <= maxRegister; i++) {
-      this.memory[this.registerI + i] = this.registers[i];
+      this.memory[this.registerI++] = this.registers[i];
     }
   }
 
@@ -498,7 +409,7 @@ export class Vm {
     let maxRegister = instruction[1];
 
     for (let i = 0; i <= maxRegister; i++) {
-      this.registers[i] = this.memory[this.registerI + i];
+      this.registers[i] = this.memory[this.registerI++];
     }
   }
 }

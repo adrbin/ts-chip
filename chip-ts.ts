@@ -1,11 +1,12 @@
-import { BitArray } from './bit-array';
 import { FRAME_TIME_IN_MS } from './constants';
 import { delay } from './utils';
-import { Input, Vm } from './vm';
+import { Chip8Vm } from './chip8-vm';
+import { Display } from './display';
+import { SuperChip48Vm } from './super-chip48-vm';
 
 export interface Renderer {
   init: () => Promise<void>;
-  draw: (bitArray: BitArray) => Promise<void>;
+  draw: (display: Display) => Promise<void>;
 }
 
 export interface Sound {
@@ -14,21 +15,12 @@ export interface Sound {
 }
 
 export interface ChipTsParams {
-  program: Buffer;
+  vm: Chip8Vm;
   renderer: Renderer;
-  input: Input;
   sound: Sound;
-  logger?: Console;
 }
 
-export async function run({
-  program,
-  renderer,
-  input,
-  sound,
-  logger,
-}: ChipTsParams) {
-  const vm = new Vm({ program, input, logger });
+export async function run({ vm, renderer, sound }: ChipTsParams) {
   await renderer.init();
 
   setInterval(() => {
@@ -46,12 +38,15 @@ export async function run({
     }
   }, FRAME_TIME_IN_MS);
 
-  while (true) {
+  // const svm = vm as SuperChip48Vm;
+  // await svm.loadFlags([0, 5, 0, 0]);
+  // svm.loadISpriteHighResolution([0, 0, 0, 0]);
+  // svm.highResolution();
+  // svm.drawHighResolution([0, 1, 2, 10]);
+  await renderer.draw(vm.display);
+
+  while (!vm.isHalted) {
     await vm.executeInstruction();
-    // vm.registers[0] = 1;
-    // vm.loadISprite([0xf, 0, 2, 9]);
-    // vm.registers[5] = 5;
-    // vm.draw([0xd, 5, 5, 5]);
     await renderer.draw(vm.display);
 
     await delay();

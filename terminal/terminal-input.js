@@ -30,6 +30,9 @@ class TerminalInput {
                 process.exit();
             }
             const pressedKey = keyMapping[String.fromCharCode(charCode)];
+            if (pressedKey === undefined) {
+                return;
+            }
             const count = this.pressedKeys.get(pressedKey) ?? 0;
             this.pressedKeys.set(pressedKey, count + 1);
             setTimeout(() => {
@@ -48,6 +51,9 @@ class TerminalInput {
             const listener = (data) => {
                 const charCode = data.readUint8();
                 const pressedKey = keyMapping[String.fromCharCode(charCode)];
+                if (pressedKey === undefined) {
+                    return;
+                }
                 this.input.removeListener('data', listener);
                 this.pressedKeys = new Map();
                 resolve(pressedKey);

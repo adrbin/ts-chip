@@ -9,6 +9,10 @@
   "author": "adrbin",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^18.6.2"
+    "@types/node": "^18.6.2",
+    "@types/yargs": "^17.0.11"
+  },
+  "dependencies": {
+    "yargs": "^17.5.1"
   }
 }

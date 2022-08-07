@@ -3,9 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = void 0;
 const constants_1 = require("./constants");
 const utils_1 = require("./utils");
-const vm_1 = require("./vm");
-async function run({ program, renderer, input, sound, logger, }) {
-    const vm = new vm_1.Vm({ program, input, logger });
+async function run({ vm, renderer, sound }) {
     await renderer.init();
     setInterval(() => {
         if (vm.delayTimer > 0) {
@@ -19,12 +17,14 @@ async function run({ program, renderer, input, sound, logger, }) {
             vm.soundTimer--;
         }
     }, constants_1.FRAME_TIME_IN_MS);
-    while (true) {
+    // const svm = vm as SuperChip48Vm;
+    // await svm.loadFlags([0, 5, 0, 0]);
+    // svm.loadISpriteHighResolution([0, 0, 0, 0]);
+    // svm.highResolution();
+    // svm.drawHighResolution([0, 1, 2, 10]);
+    await renderer.draw(vm.display);
+    while (!vm.isHalted) {
         await vm.executeInstruction();
-        // vm.registers[0] = 1;
-        // vm.loadISprite([0xf, 0, 2, 9]);
-        // vm.registers[5] = 5;
-        // vm.draw([0xd, 5, 5, 5]);
         await renderer.draw(vm.display);
         await (0, utils_1.delay)();
     }

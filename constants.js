@@ -1,17 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FONT_DATA = exports.FRAME_TIME_IN_MS = exports.FPS = exports.FLAG_REGISTER = exports.REGISTER_COUNT = exports.DISPLAY_SIZE = exports.DISPLAY_HEIGHT = exports.DISPLAY_WIDTH = exports.BYTE_LENGTH = exports.BYTE_SIZE = exports.PROGRAM_START = exports.MEMORY_SIZE = void 0;
+exports.LARGE_FONT_DATA_START = exports.FONT_DATA_START = exports.FONT_DATA = exports.HIGH_RES_DISPLAY_HEIGHT = exports.HIGH_RES_DISPLAY_WIDTH = exports.DISPLAY_HEIGHT = exports.DISPLAY_WIDTH = exports.FRAME_TIME_IN_MS = exports.FPS = exports.FLAG_REGISTER = exports.REGISTER_COUNT = exports.BYTE_LENGTH = exports.BYTE_SIZE = exports.PROGRAM_START = exports.MEMORY_SIZE = void 0;
 exports.MEMORY_SIZE = 4096;
 exports.PROGRAM_START = 512;
 exports.BYTE_SIZE = 256;
 exports.BYTE_LENGTH = 8;
-exports.DISPLAY_WIDTH = 64;
-exports.DISPLAY_HEIGHT = 32;
-exports.DISPLAY_SIZE = exports.DISPLAY_WIDTH * exports.DISPLAY_HEIGHT;
 exports.REGISTER_COUNT = 16;
 exports.FLAG_REGISTER = exports.REGISTER_COUNT - 1;
 exports.FPS = 60;
 exports.FRAME_TIME_IN_MS = Math.ceil(1000 / exports.FPS);
+exports.DISPLAY_WIDTH = 64;
+exports.DISPLAY_HEIGHT = 32;
+exports.HIGH_RES_DISPLAY_WIDTH = 128;
+exports.HIGH_RES_DISPLAY_HEIGHT = 64;
 exports.FONT_DATA = [
     0xf0, 0x90, 0x90, 0x90, 0xf0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xf0, 0x10, 0xf0,
     0x80, 0xf0, 0xf0, 0x10, 0xf0, 0x10, 0xf0, 0x90, 0x90, 0xf0, 0x10, 0x10, 0xf0,
@@ -21,4 +22,6 @@ exports.FONT_DATA = [
     0xe0, 0x90, 0x90, 0x90, 0xe0, 0xf0, 0x80, 0xf0, 0x80, 0xf0, 0xf0, 0x80, 0xf0,
     0x80, 0x80,
 ];
+exports.FONT_DATA_START = 0;
+exports.LARGE_FONT_DATA_START = exports.FONT_DATA.length;
 //# sourceMappingURL=constants.js.map
