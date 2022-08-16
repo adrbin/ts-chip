@@ -9,8 +9,8 @@ import {
   MEMORY_SIZE,
   PROGRAM_START,
   REGISTER_COUNT,
-} from './constants';
-import { createDisplay } from './display';
+} from './constants.js';
+import { createDisplay } from './display.js';
 import {
   getBcd,
   getHigherNibble,
@@ -21,7 +21,7 @@ import {
   matchInstruction,
   mod,
   toHex,
-} from './utils';
+} from './utils.js';
 
 export type InstructionArray = [number, number, number, number];
 

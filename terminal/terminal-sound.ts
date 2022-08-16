@@ -1,5 +1,5 @@
 import { WriteStream } from 'tty';
-import { Sound } from '../chip-ts';
+import { Sound } from '../chip-ts.js';
 
 const alertCharacter = String.fromCharCode(7);
 

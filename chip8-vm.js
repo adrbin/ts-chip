@@ -1,74 +1,74 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Chip8Vm = void 0;
-const constants_1 = require("./constants");
-const display_1 = require("./display");
-const utils_1 = require("./utils");
-class Chip8Vm {
+import { BYTE_LENGTH, BYTE_SIZE, DISPLAY_HEIGHT, DISPLAY_WIDTH, FLAG_REGISTER, FONT_DATA, FONT_DATA_START, MEMORY_SIZE, PROGRAM_START, REGISTER_COUNT, } from './constants.js';
+import { createDisplay } from './display.js';
+import { getBcd, getHigherNibble, getLowerNibble, getNthBit, getRandomInt, joinNibbles, matchInstruction, mod, toHex, } from './utils.js';
+export class Chip8Vm {
+    memory = new Uint8Array(MEMORY_SIZE);
+    display = createDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    registers = new Uint8Array(REGISTER_COUNT);
+    registerI = 0;
+    delayTimer = 0;
+    soundTimer = 0;
+    pc = PROGRAM_START;
+    sp = -1;
+    stack = [];
+    isHalted = false;
+    input;
+    logger;
+    storage;
+    operations = [
+        [instruction => matchInstruction(instruction, '00e0'), this.clear],
+        [instruction => matchInstruction(instruction, '00EE'), this.return],
+        [instruction => matchInstruction(instruction, '1xxx'), this.jumpAddress],
+        [instruction => matchInstruction(instruction, '2xxx'), this.call],
+        [instruction => matchInstruction(instruction, '3xxx'), this.skipEqualValue],
+        [
+            instruction => matchInstruction(instruction, '4xxx'),
+            this.skipNotEqualValue,
+        ],
+        [
+            instruction => matchInstruction(instruction, '5xxx'),
+            this.skipEqualRegister,
+        ],
+        [instruction => matchInstruction(instruction, '6xxx'), this.loadValue],
+        [instruction => matchInstruction(instruction, '7xxx'), this.add],
+        [instruction => matchInstruction(instruction, '8xx0'), this.loadRegister],
+        [instruction => matchInstruction(instruction, '8xx1'), this.or],
+        [instruction => matchInstruction(instruction, '8xx2'), this.and],
+        [instruction => matchInstruction(instruction, '8xx3'), this.xor],
+        [instruction => matchInstruction(instruction, '8xx4'), this.addCarry],
+        [instruction => matchInstruction(instruction, '8xx5'), this.sub],
+        [instruction => matchInstruction(instruction, '8xx6'), this.shiftRight],
+        [instruction => matchInstruction(instruction, '8xx7'), this.subNegative],
+        [instruction => matchInstruction(instruction, '8xxE'), this.shiftLeft],
+        [
+            instruction => matchInstruction(instruction, '9xxx'),
+            this.skipNotEqualRegister,
+        ],
+        [instruction => matchInstruction(instruction, 'Axxx'), this.loadI],
+        [
+            instruction => matchInstruction(instruction, 'Bxxx'),
+            this.jumpRelativeAddress,
+        ],
+        [instruction => matchInstruction(instruction, 'Cxxx'), this.random],
+        [instruction => matchInstruction(instruction, 'Dxxx'), this.draw],
+        [instruction => matchInstruction(instruction, 'Ex9E'), this.skipPressed],
+        [instruction => matchInstruction(instruction, 'ExA1'), this.skipNotPressed],
+        [instruction => matchInstruction(instruction, 'Fx07'), this.loadDelayTimer],
+        [instruction => matchInstruction(instruction, 'Fx0A'), this.waitPressed],
+        [instruction => matchInstruction(instruction, 'Fx15'), this.setDelayTimer],
+        [instruction => matchInstruction(instruction, 'Fx18'), this.setSoundTimer],
+        [instruction => matchInstruction(instruction, 'Fx1E'), this.addI],
+        [instruction => matchInstruction(instruction, 'Fx29'), this.loadISprite],
+        [instruction => matchInstruction(instruction, 'Fx33'), this.loadIBcd],
+        [instruction => matchInstruction(instruction, 'Fx55'), this.loadIRegisters],
+        [instruction => matchInstruction(instruction, 'Fx65'), this.loadRegistersI],
+    ];
     constructor({ program, input, logger, storage }) {
-        this.memory = new Uint8Array(constants_1.MEMORY_SIZE);
-        this.display = (0, display_1.createDisplay)(constants_1.DISPLAY_WIDTH, constants_1.DISPLAY_HEIGHT);
-        this.registers = new Uint8Array(constants_1.REGISTER_COUNT);
-        this.registerI = 0;
-        this.delayTimer = 0;
-        this.soundTimer = 0;
-        this.pc = constants_1.PROGRAM_START;
-        this.sp = -1;
-        this.stack = [];
-        this.isHalted = false;
-        this.operations = [
-            [instruction => (0, utils_1.matchInstruction)(instruction, '00e0'), this.clear],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '00EE'), this.return],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '1xxx'), this.jumpAddress],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '2xxx'), this.call],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '3xxx'), this.skipEqualValue],
-            [
-                instruction => (0, utils_1.matchInstruction)(instruction, '4xxx'),
-                this.skipNotEqualValue,
-            ],
-            [
-                instruction => (0, utils_1.matchInstruction)(instruction, '5xxx'),
-                this.skipEqualRegister,
-            ],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '6xxx'), this.loadValue],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '7xxx'), this.add],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx0'), this.loadRegister],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx1'), this.or],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx2'), this.and],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx3'), this.xor],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx4'), this.addCarry],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx5'), this.sub],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx6'), this.shiftRight],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xx7'), this.subNegative],
-            [instruction => (0, utils_1.matchInstruction)(instruction, '8xxE'), this.shiftLeft],
-            [
-                instruction => (0, utils_1.matchInstruction)(instruction, '9xxx'),
-                this.skipNotEqualRegister,
-            ],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Axxx'), this.loadI],
-            [
-                instruction => (0, utils_1.matchInstruction)(instruction, 'Bxxx'),
-                this.jumpRelativeAddress,
-            ],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Cxxx'), this.random],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Dxxx'), this.draw],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Ex9E'), this.skipPressed],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'ExA1'), this.skipNotPressed],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx07'), this.loadDelayTimer],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx0A'), this.waitPressed],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx15'), this.setDelayTimer],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx18'), this.setSoundTimer],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx1E'), this.addI],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx29'), this.loadISprite],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx33'), this.loadIBcd],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx55'), this.loadIRegisters],
-            [instruction => (0, utils_1.matchInstruction)(instruction, 'Fx65'), this.loadRegistersI],
-        ];
-        for (let i = 0; i < constants_1.FONT_DATA.length; i++) {
-            this.memory[i] = constants_1.FONT_DATA[i];
+        for (let i = 0; i < FONT_DATA.length; i++) {
+            this.memory[i] = FONT_DATA[i];
         }
         for (let i = 0; i < program.length; i++) {
-            this.memory[constants_1.PROGRAM_START + i] = program.readUint8(i);
+            this.memory[PROGRAM_START + i] = program.readUint8(i);
         }
         this.input = input;
         this.logger = logger;
@@ -78,7 +78,7 @@ class Chip8Vm {
         const instruction = this.fetchInstruction();
         const [_, operation] = this.operations.find(([condition]) => condition(instruction)) ?? [];
         if (!operation) {
-            this.logger?.warn('Unknown instruction: ', (0, utils_1.toHex)(instruction));
+            this.logger?.warn('Unknown instruction: ', toHex(instruction));
             return;
         }
         await operation.bind(this)(instruction);
@@ -87,20 +87,20 @@ class Chip8Vm {
         if (this.isHalted) {
             throw new Error('The program is halted.');
         }
-        if (this.pc >= constants_1.MEMORY_SIZE - 1) {
+        if (this.pc >= MEMORY_SIZE - 1) {
             throw new Error('Program counter has reached the end of the memory.');
         }
         const byte1 = this.memory[this.pc++];
         const byte2 = this.memory[this.pc++];
         return [
-            (0, utils_1.getHigherNibble)(byte1),
-            (0, utils_1.getLowerNibble)(byte1),
-            (0, utils_1.getHigherNibble)(byte2),
-            (0, utils_1.getLowerNibble)(byte2),
+            getHigherNibble(byte1),
+            getLowerNibble(byte1),
+            getHigherNibble(byte2),
+            getLowerNibble(byte2),
         ];
     }
     clear() {
-        this.display = (0, display_1.createDisplay)(this.display.width, this.display.height);
+        this.display = createDisplay(this.display.width, this.display.height);
     }
     return() {
         if (this.sp < 0) {
@@ -110,24 +110,24 @@ class Chip8Vm {
         this.pc = address;
     }
     jumpAddress(instruction) {
-        const address = (0, utils_1.joinNibbles)(instruction.slice(1));
+        const address = joinNibbles(instruction.slice(1));
         this.pc = address;
     }
     call(instruction) {
-        const address = (0, utils_1.joinNibbles)(instruction.slice(1));
+        const address = joinNibbles(instruction.slice(1));
         this.stack[++this.sp] = this.pc;
         this.pc = address;
     }
     skipEqualValue(instruction) {
         const register = instruction[1];
-        const value = (0, utils_1.joinNibbles)(instruction.slice(2));
+        const value = joinNibbles(instruction.slice(2));
         if (this.registers[register] === value) {
             this.pc += 2;
         }
     }
     skipNotEqualValue(instruction) {
         const register = instruction[1];
-        const value = (0, utils_1.joinNibbles)(instruction.slice(2));
+        const value = joinNibbles(instruction.slice(2));
         if (this.registers[register] !== value) {
             this.pc += 2;
         }
@@ -141,14 +141,14 @@ class Chip8Vm {
     }
     loadValue(instruction) {
         const register = instruction[1];
-        const value = (0, utils_1.joinNibbles)(instruction.slice(2));
+        const value = joinNibbles(instruction.slice(2));
         this.registers[register] = value;
     }
     add(instruction) {
         const register = instruction[1];
-        const value = (0, utils_1.joinNibbles)(instruction.slice(2));
+        const value = joinNibbles(instruction.slice(2));
         const sum = this.registers[register] + value;
-        this.registers[register] = (0, utils_1.mod)(sum, constants_1.BYTE_SIZE);
+        this.registers[register] = mod(sum, BYTE_SIZE);
     }
     loadRegister(instruction) {
         const register1 = instruction[1];
@@ -159,54 +159,54 @@ class Chip8Vm {
         const register1 = instruction[1];
         const register2 = instruction[2];
         this.registers[register1] |= this.registers[register2];
-        this.registers[constants_1.FLAG_REGISTER] = 0;
+        this.registers[FLAG_REGISTER] = 0;
     }
     and(instruction) {
         const register1 = instruction[1];
         const register2 = instruction[2];
         this.registers[register1] &= this.registers[register2];
-        this.registers[constants_1.FLAG_REGISTER] = 0;
+        this.registers[FLAG_REGISTER] = 0;
     }
     xor(instruction) {
         const register1 = instruction[1];
         const register2 = instruction[2];
         this.registers[register1] ^= this.registers[register2];
-        this.registers[constants_1.FLAG_REGISTER] = 0;
+        this.registers[FLAG_REGISTER] = 0;
     }
     addCarry(instruction) {
         const register1 = instruction[1];
         const register2 = instruction[2];
         const sum = this.registers[register1] + this.registers[register2];
-        this.registers[register1] = (0, utils_1.mod)(sum, constants_1.BYTE_SIZE);
-        this.registers[constants_1.FLAG_REGISTER] = sum >= constants_1.BYTE_SIZE ? 1 : 0;
+        this.registers[register1] = mod(sum, BYTE_SIZE);
+        this.registers[FLAG_REGISTER] = sum >= BYTE_SIZE ? 1 : 0;
     }
     sub(instruction) {
         const register1 = instruction[1];
         const register2 = instruction[2];
         const difference = this.registers[register1] - this.registers[register2];
-        this.registers[register1] = (0, utils_1.mod)(difference, constants_1.BYTE_SIZE);
-        this.registers[constants_1.FLAG_REGISTER] = difference > 0 ? 1 : 0;
+        this.registers[register1] = mod(difference, BYTE_SIZE);
+        this.registers[FLAG_REGISTER] = difference > 0 ? 1 : 0;
     }
     shiftRight(instruction) {
         const register1 = instruction[1];
         const register2 = instruction[2];
         const flag = this.registers[register2] & 1;
         this.registers[register1] = this.registers[register2] >> 1;
-        this.registers[constants_1.FLAG_REGISTER] = flag;
+        this.registers[FLAG_REGISTER] = flag;
     }
     subNegative(instruction) {
         const register1 = instruction[1];
         const register2 = instruction[2];
         const difference = this.registers[register2] - this.registers[register1];
-        this.registers[register1] = (0, utils_1.mod)(difference, constants_1.BYTE_SIZE);
-        this.registers[constants_1.FLAG_REGISTER] = difference > 0 ? 1 : 0;
+        this.registers[register1] = mod(difference, BYTE_SIZE);
+        this.registers[FLAG_REGISTER] = difference > 0 ? 1 : 0;
     }
     shiftLeft(instruction) {
         const register1 = instruction[1];
         const register2 = instruction[2];
-        const flag = (0, utils_1.getNthBit)(this.registers[register2], 0);
+        const flag = getNthBit(this.registers[register2], 0);
         this.registers[register1] = (this.registers[register2] << 1) & 0xff;
-        this.registers[constants_1.FLAG_REGISTER] = flag;
+        this.registers[FLAG_REGISTER] = flag;
     }
     skipNotEqualRegister(instruction) {
         const register1 = instruction[1];
@@ -216,37 +216,37 @@ class Chip8Vm {
         }
     }
     loadI(instruction) {
-        const value = (0, utils_1.joinNibbles)(instruction.slice(1));
+        const value = joinNibbles(instruction.slice(1));
         this.registerI = value;
     }
     jumpRelativeAddress(instruction) {
-        const address = (0, utils_1.joinNibbles)(instruction.slice(1));
-        this.pc = (0, utils_1.mod)(this.registers[0] + address, constants_1.MEMORY_SIZE);
+        const address = joinNibbles(instruction.slice(1));
+        this.pc = mod(this.registers[0] + address, MEMORY_SIZE);
     }
     random(instruction) {
         const register = instruction[1];
-        const value = (0, utils_1.joinNibbles)(instruction.slice(2));
-        this.registers[register] = (0, utils_1.getRandomInt)(constants_1.BYTE_SIZE) & value;
+        const value = joinNibbles(instruction.slice(2));
+        this.registers[register] = getRandomInt(BYTE_SIZE) & value;
     }
     draw(instruction) {
-        const originX = (0, utils_1.mod)(this.registers[instruction[1]], this.display.width);
-        const originY = (0, utils_1.mod)(this.registers[instruction[2]], this.display.height);
+        const originX = mod(this.registers[instruction[1]], this.display.width);
+        const originY = mod(this.registers[instruction[2]], this.display.height);
         const height = instruction[3];
         let isCollision = false;
         for (let dy = 0; dy < height; dy++) {
             const spriteByte = this.memory[this.registerI + dy];
-            for (let dx = 0; dx < constants_1.BYTE_LENGTH; dx++) {
+            for (let dx = 0; dx < BYTE_LENGTH; dx++) {
                 const x = originX + dx;
                 const y = originY + dy;
                 if (x >= this.display.width || y >= this.display.height) {
                     continue;
                 }
-                const spriteValue = (0, utils_1.getNthBit)(spriteByte, dx);
+                const spriteValue = getNthBit(spriteByte, dx);
                 const isCurrentCollision = this.display.display.xor(y * this.display.width + x, spriteValue);
                 isCollision ||= isCurrentCollision;
             }
         }
-        this.registers[constants_1.FLAG_REGISTER] = isCollision ? 1 : 0;
+        this.registers[FLAG_REGISTER] = isCollision ? 1 : 0;
     }
     skipPressed(instruction) {
         const registerValue = this.registers[instruction[1]];
@@ -281,15 +281,15 @@ class Chip8Vm {
     }
     addI(instruction) {
         const register = instruction[1];
-        this.registerI = (0, utils_1.mod)(this.registerI + this.registers[register], constants_1.MEMORY_SIZE);
+        this.registerI = mod(this.registerI + this.registers[register], MEMORY_SIZE);
     }
     loadISprite(instruction) {
         const register = instruction[1];
-        this.registerI = constants_1.FONT_DATA_START + this.registers[register] * 5;
+        this.registerI = FONT_DATA_START + this.registers[register] * 5;
     }
     loadIBcd(instruction) {
         let registerValue = this.registers[instruction[1]];
-        const bcd = (0, utils_1.getBcd)(registerValue, 3);
+        const bcd = getBcd(registerValue, 3);
         this.memory[this.registerI] = bcd[0];
         this.memory[this.registerI + 1] = bcd[1];
         this.memory[this.registerI + 2] = bcd[2];
@@ -307,5 +307,4 @@ class Chip8Vm {
         }
     }
 }
-exports.Chip8Vm = Chip8Vm;
 //# sourceMappingURL=chip8-vm.js.map

@@ -1,19 +1,16 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileStorage = void 0;
-const promises_1 = require("fs/promises");
-class FileStorage {
+import { readFile, writeFile } from 'fs/promises';
+export class FileStorage {
+    filename;
     constructor(filename) {
         this.filename = filename;
     }
     async save(data) {
         const json = JSON.stringify(data);
-        await (0, promises_1.writeFile)(this.filename, json);
+        await writeFile(this.filename, json);
     }
     async load() {
-        const file = await (0, promises_1.readFile)(this.filename, 'utf8');
+        const file = await readFile(this.filename, 'utf8');
         return JSON.parse(file);
     }
 }
-exports.FileStorage = FileStorage;
 //# sourceMappingURL=file-storage.js.map

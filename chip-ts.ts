@@ -1,8 +1,7 @@
-import { FRAME_TIME_IN_MS } from './constants';
-import { delay } from './utils';
-import { Chip8Vm } from './chip8-vm';
-import { Display } from './display';
-import { SuperChip48Vm } from './super-chip48-vm';
+import { FRAME_TIME_IN_MS } from './constants.js';
+import { delay } from './utils.js';
+import { Chip8Vm } from './chip8-vm.js';
+import { Display } from './display.js';
 
 export interface Renderer {
   init: () => Promise<void>;

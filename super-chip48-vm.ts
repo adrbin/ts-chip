@@ -3,7 +3,7 @@ import {
   InstructionArray,
   InstructionCondition,
   VmParams,
-} from './chip8-vm';
+} from './chip8-vm.js';
 import {
   BYTE_LENGTH,
   DISPLAY_HEIGHT,
@@ -14,8 +14,8 @@ import {
   HIGH_RES_DISPLAY_WIDTH,
   LARGE_FONT_DATA_START,
   MEMORY_SIZE,
-} from './constants';
-import { createDisplay } from './display';
+} from './constants.js';
+import { createDisplay } from './display.js';
 import {
   doubleByte,
   getHigherNibble,
@@ -24,7 +24,7 @@ import {
   joinNibbles,
   matchInstruction,
   mod,
-} from './utils';
+} from './utils.js';
 
 export class SuperChip48Vm extends Chip8Vm {
   newOperations: InstructionCondition[] = [

@@ -1,39 +1,34 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const console_1 = require("console");
-const fs_1 = require("fs");
-const promises_1 = require("fs/promises");
-const process_1 = require("process");
-const yargs_1 = __importDefault(require("yargs"));
-const helpers_1 = require("yargs/helpers");
-const chip_ts_1 = require("../chip-ts");
-const chip8_vm_1 = require("../chip8-vm");
-const super_chip48_vm_1 = require("../super-chip48-vm");
-const file_storage_1 = require("./file-storage");
-const terminal_input_1 = require("./terminal-input");
-const terminal_renderer_1 = require("./terminal-renderer");
-const terminal_sound_1 = require("./terminal-sound");
+import { Console } from 'console';
+import { createWriteStream } from 'fs';
+import { readFile } from 'fs/promises';
+import { stdin, stdout } from 'process';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { run } from '../chip-ts.js';
+import { Chip8Vm } from '../chip8-vm.js';
+import { SuperChip48Vm } from '../super-chip48-vm.js';
+import { FileStorage } from './file-storage.js';
+import { TerminalInput } from './terminal-input.js';
+import { TerminalRenderer } from './terminal-renderer.js';
+import { TerminalSound } from './terminal-sound.js';
 async function main() {
     const argv = await getArgv();
-    const renderer = new terminal_renderer_1.TerminalRenderer({
-        output: process_1.stdout,
+    const renderer = new TerminalRenderer({
+        output: stdout,
         shouldLimitFrame: argv.mode === 'chip-8',
     });
-    const sound = new terminal_sound_1.TerminalSound(process_1.stdout);
-    const input = new terminal_input_1.TerminalInput(process_1.stdin);
-    const consoleStream = (0, fs_1.createWriteStream)(`${argv.load}.log`);
-    const logger = new console_1.Console(consoleStream, consoleStream);
-    const storage = new file_storage_1.FileStorage(`${argv.load}.state`);
-    const program = await (0, promises_1.readFile)(argv.load);
-    const vmClass = argv.mode === 'chip-8' ? chip8_vm_1.Chip8Vm : super_chip48_vm_1.SuperChip48Vm;
+    const sound = new TerminalSound(stdout);
+    const input = new TerminalInput(stdin);
+    const consoleStream = createWriteStream(`${argv.load}.log`);
+    const logger = new Console(consoleStream, consoleStream);
+    const storage = new FileStorage(`${argv.load}.state`);
+    const program = await readFile(argv.load);
+    const vmClass = argv.mode === 'chip-8' ? Chip8Vm : SuperChip48Vm;
     const vm = new vmClass({ program, input, logger, storage });
-    await (0, chip_ts_1.run)({ vm, renderer, sound });
+    await run({ vm, renderer, sound });
 }
 function getArgv() {
-    return (0, yargs_1.default)((0, helpers_1.hideBin)(process.argv))
+    return yargs(hideBin(process.argv))
         .options({
         load: {
             alias: 'l',

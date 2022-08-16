@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TerminalSound = void 0;
 const alertCharacter = String.fromCharCode(7);
-class TerminalSound {
+export class TerminalSound {
+    output;
     constructor(output) {
         this.output = output;
     }
@@ -11,5 +9,4 @@ class TerminalSound {
     }
     stop() { }
 }
-exports.TerminalSound = TerminalSound;
 //# sourceMappingURL=terminal-sound.js.map

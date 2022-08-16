@@ -1,10 +1,14 @@
-import { Renderer } from '../chip-ts';
-import { DISPLAY_HEIGHT, DISPLAY_WIDTH, FRAME_TIME_IN_MS } from '../constants';
-import { delay, mod } from '../utils';
+import { Renderer } from '../chip-ts.js';
+import {
+  DISPLAY_HEIGHT,
+  DISPLAY_WIDTH,
+  FRAME_TIME_IN_MS,
+} from '../constants.js';
+import { delay, mod } from '../utils.js';
 import { WriteStream } from 'tty';
 import { promisify } from 'util';
-import { createDisplay, Display } from '../display';
-import { BitArray } from '../bit-array';
+import { createDisplay, Display } from '../display.js';
+import { BitArray } from '../bit-array.js';
 
 export interface TerminalRendererParams {
   output: WriteStream;

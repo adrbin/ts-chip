@@ -1,9 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.run = void 0;
-const constants_1 = require("./constants");
-const utils_1 = require("./utils");
-async function run({ vm, renderer, sound }) {
+import { FRAME_TIME_IN_MS } from './constants.js';
+import { delay } from './utils.js';
+export async function run({ vm, renderer, sound }) {
     await renderer.init();
     setInterval(() => {
         if (vm.delayTimer > 0) {
@@ -16,7 +13,7 @@ async function run({ vm, renderer, sound }) {
             sound.play();
             vm.soundTimer--;
         }
-    }, constants_1.FRAME_TIME_IN_MS);
+    }, FRAME_TIME_IN_MS);
     // const svm = vm as SuperChip48Vm;
     // await svm.loadFlags([0, 5, 0, 0]);
     // svm.loadISpriteHighResolution([0, 0, 0, 0]);
@@ -26,8 +23,7 @@ async function run({ vm, renderer, sound }) {
     while (!vm.isHalted) {
         await vm.executeInstruction();
         await renderer.draw(vm.display);
-        await (0, utils_1.delay)();
+        await delay();
     }
 }
-exports.run = run;
 //# sourceMappingURL=chip-ts.js.map

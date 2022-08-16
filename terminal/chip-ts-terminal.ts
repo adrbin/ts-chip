@@ -4,13 +4,13 @@ import { readFile } from 'fs/promises';
 import { stdin, stdout } from 'process';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { run } from '../chip-ts';
-import { Chip8Vm } from '../chip8-vm';
-import { SuperChip48Vm } from '../super-chip48-vm';
-import { FileStorage } from './file-storage';
-import { TerminalInput } from './terminal-input';
-import { TerminalRenderer } from './terminal-renderer';
-import { TerminalSound } from './terminal-sound';
+import { run } from '../chip-ts.js';
+import { Chip8Vm } from '../chip8-vm.js';
+import { SuperChip48Vm } from '../super-chip48-vm.js';
+import { FileStorage } from './file-storage.js';
+import { TerminalInput } from './terminal-input.js';
+import { TerminalRenderer } from './terminal-renderer.js';
+import { TerminalSound } from './terminal-sound.js';
 
 async function main() {
   const argv = await getArgv();

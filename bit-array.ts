@@ -1,5 +1,5 @@
-import { BYTE_LENGTH } from './constants';
-import { getNthBit, mod } from './utils';
+import { BYTE_LENGTH } from './constants.js';
+import { getNthBit, mod } from './utils.js';
 
 export class BitArray {
   array: Uint8Array;

@@ -1,4 +1,4 @@
-import { BitArray } from './bit-array';
+import { BitArray } from './bit-array.js';
 
 export interface Display {
   width: number;

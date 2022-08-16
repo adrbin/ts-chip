@@ -1,4 +1,4 @@
-import { BYTE_LENGTH } from './constants';
+import { BYTE_LENGTH } from './constants.js';
 
 export function delay(ms?: number) {
   return new Promise<void>(resolve => setTimeout(resolve, ms));

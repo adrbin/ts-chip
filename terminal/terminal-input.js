@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TerminalInput = void 0;
 const keyMapping = {
     '1': 1,
     '2': 2,
@@ -19,9 +16,10 @@ const keyMapping = {
     c: 0xb,
     v: 0xf,
 };
-class TerminalInput {
+export class TerminalInput {
+    input;
+    pressedKeys = new Map();
     constructor(input) {
-        this.pressedKeys = new Map();
         this.input = input;
         this.input.setRawMode(true);
         this.input.on('data', data => {
@@ -62,5 +60,4 @@ class TerminalInput {
         });
     }
 }
-exports.TerminalInput = TerminalInput;
 //# sourceMappingURL=terminal-input.js.map

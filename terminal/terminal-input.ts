@@ -1,5 +1,5 @@
 import { ReadStream } from 'tty';
-import { Input } from '../chip8-vm';
+import { Input } from '../chip8-vm.js';
 
 const keyMapping: { [key: string]: number } = {
   '1': 1,
