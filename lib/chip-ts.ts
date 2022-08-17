@@ -37,16 +37,12 @@ export async function run({ vm, renderer, sound }: ChipTsParams) {
     }
   }, FRAME_TIME_IN_MS);
 
-  // const svm = vm as SuperChip48Vm;
-  // await svm.loadFlags([0, 5, 0, 0]);
-  // svm.loadISpriteHighResolution([0, 0, 0, 0]);
-  // svm.highResolution();
-  // svm.drawHighResolution([0, 1, 2, 10]);
-  await renderer.draw(vm.display);
-
   while (!vm.isHalted) {
     await vm.executeInstruction();
-    await renderer.draw(vm.display);
+
+    if (vm.didDraw) {
+      await renderer.draw(vm.display);
+    }
 
     await delay();
   }

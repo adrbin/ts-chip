@@ -2,6 +2,7 @@ import {
   Chip8Vm,
   InstructionArray,
   InstructionCondition,
+  OperationCallback,
   VmParams,
 } from './chip8-vm.js';
 import {
@@ -46,6 +47,15 @@ export class SuperChip48Vm extends Chip8Vm {
     [instruction => matchInstruction(instruction, 'Fx85'), this.loadFlags],
   ];
 
+  newDrawOperations: OperationCallback[] = [
+    this.scrollDown,
+    this.scrollRight,
+    this.scrollLeft,
+    this.lowResolution,
+    this.highResolution,
+    this.drawHighResolution,
+  ];
+
   constructor(vmParams: VmParams) {
     super(vmParams);
 
@@ -56,6 +66,7 @@ export class SuperChip48Vm extends Chip8Vm {
     }
 
     this.operations = [...this.newOperations, ...this.operations];
+    this.drawOperations = [...this.drawOperations, ...this.newDrawOperations];
   }
 
   scrollDown(instruction: InstructionArray) {

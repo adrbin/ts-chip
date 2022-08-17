@@ -24,10 +24,16 @@ import {
 } from './utils.js';
 
 export type InstructionArray = [number, number, number, number];
+export type MatchInstructionCallback = (
+  instruction: InstructionArray,
+) => boolean;
+export type OperationCallback = (
+  instruction: InstructionArray,
+) => Promise<void> | void;
 
 export type InstructionCondition = [
-  (instruction: InstructionArray) => boolean,
-  (instruction: InstructionArray) => Promise<void> | void,
+  MatchInstructionCallback,
+  OperationCallback,
 ];
 
 export type InputCallback = () => Set<number>;
@@ -61,6 +67,7 @@ export class Chip8Vm {
   sp = -1;
   stack: number[] = [];
   isHalted = false;
+  didDraw = false;
   input: Input;
   logger?: Console;
   storage?: Storage;
@@ -114,6 +121,8 @@ export class Chip8Vm {
     [instruction => matchInstruction(instruction, 'Fx65'), this.loadRegistersI],
   ];
 
+  drawOperations: OperationCallback[] = [this.draw, this.clear];
+
   constructor({ program, input, logger, storage }: VmParams) {
     for (let i = 0; i < FONT_DATA.length; i++) {
       this.memory[i] = FONT_DATA[i];
@@ -138,7 +147,13 @@ export class Chip8Vm {
       return;
     }
 
+    this.setDidDraw(operation);
+
     await operation.bind(this)(instruction);
+  }
+
+  setDidDraw(operation: OperationCallback) {
+    this.didDraw = this.drawOperations.includes(operation);
   }
 
   fetchInstruction(): InstructionArray {

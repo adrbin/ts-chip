@@ -50,11 +50,12 @@ export class TerminalRenderer implements Renderer {
     await this.checkDisplaySize(display);
 
     const diff = display.display.diff(this.previousDisplay.display);
+
+    await this.limitFrame();
+
     if (diff.length === 0) {
       return;
     }
-
-    await this.limitFrame();
 
     await this.drawToScreen(display, diff);
 
