@@ -4,9 +4,9 @@ import { readFile } from 'fs/promises';
 import { stdin, stdout } from 'process';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { run } from '../chip-ts.js';
-import { Chip8Vm } from '../chip8-vm.js';
-import { SuperChip48Vm } from '../super-chip48-vm.js';
+import { run } from '../lib/chip-ts.js';
+import { Chip8Vm } from '../lib/chip8-vm.js';
+import { SuperChip48Vm } from '../lib/super-chip48-vm.js';
 import { FileStorage } from './file-storage.js';
 import { TerminalInput } from './terminal-input.js';
 import { TerminalRenderer } from './terminal-renderer.js';
@@ -40,7 +40,7 @@ function getArgv() {
         alias: 'l',
         type: 'string',
         description: 'Load a rom',
-        default: 'roms/chip8-test-suite.ch8',
+        default: 'roms/chip-8/chip8-test-suite.ch8',
       },
       mode: {
         alias: 'm',

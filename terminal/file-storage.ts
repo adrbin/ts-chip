@@ -1,5 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
-import { Storage } from '../chip8-vm.js';
+import { Storage } from '../lib/chip8-vm.js';
 
 export class FileStorage implements Storage {
   filename: string;

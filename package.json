@@ -2,16 +2,16 @@
   "name": "chip-ts",
   "version": "1.0.0",
   "description": "Chip-8 interpreter in TypeScript",
-  "main": "terminal/chip-ts-terminal.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/terminal/chip-ts-terminal.js"
   },
   "author": "adrbin",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.6.2",
-    "@types/yargs": "^17.0.11"
+    "@types/yargs": "^17.0.11",
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "yargs": "^17.5.1"

@@ -1,14 +1,14 @@
-import { Renderer } from '../chip-ts.js';
+import { Renderer } from '../lib/chip-ts.js';
 import {
   DISPLAY_HEIGHT,
   DISPLAY_WIDTH,
   FRAME_TIME_IN_MS,
-} from '../constants.js';
-import { delay, mod } from '../utils.js';
+} from '../lib/constants.js';
+import { delay, mod } from '../lib/utils.js';
 import { WriteStream } from 'tty';
 import { promisify } from 'util';
-import { createDisplay, Display } from '../display.js';
-import { BitArray } from '../bit-array.js';
+import { createDisplay, Display } from '../lib/display.js';
+import { BitArray } from '../lib/bit-array.js';
 
 export interface TerminalRendererParams {
   output: WriteStream;
@@ -89,25 +89,16 @@ export class TerminalRenderer implements Renderer {
   private async drawToScreen(display: Display, diff: number[]) {
     const toWrite = ' '.repeat(this.scaleFactor);
 
-    let previousIndex = NaN;
     for (const index of diff) {
-      const value = display.display.get(index);
-
-      if (index !== previousIndex + 1) {
-        const x = mod(index, display.width) * this.scaleFactor;
-        const y = Math.floor(index / display.width);
-        await this.cursorTo(x, y);
-      } else if (display.display.get(previousIndex) === value) {
-        await this.write(toWrite);
-        continue;
-      }
+      const x = mod(index, display.width) * this.scaleFactor;
+      const y = Math.floor(index / display.width);
+      await this.cursorTo(x, y);
 
       if (display.display.get(index) === 1) {
         await this.write(`\u001b[107m${toWrite}`);
       } else {
         await this.write(`\u001b[49m${toWrite}`);
       }
-      previousIndex = index;
     }
   }
 }
