@@ -1,10 +1,11 @@
 {
-  "name": "chip-ts",
+  "name": "ts-chip",
   "version": "1.0.0",
   "description": "Chip-8 interpreter in TypeScript",
   "type": "module",
   "scripts": {
-    "start": "node dist/terminal/chip-ts-terminal.js"
+    "start": "node dist/terminal/ts-chip-terminal.js",
+    "build": "cp static/* dist && tsc"
   },
   "author": "adrbin",
   "license": "ISC",

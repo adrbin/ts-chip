@@ -11,7 +11,7 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/terminal/chip-ts-terminal.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/**/*.js"]
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]
 }

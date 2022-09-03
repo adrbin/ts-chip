@@ -6,6 +6,7 @@ export const REGISTER_COUNT = 16;
 export const FLAG_REGISTER = REGISTER_COUNT - 1;
 export const FPS = 60;
 export const FRAME_TIME_IN_MS = Math.ceil(1000 / FPS);
+export const ONE_SECOND_IN_MS = 1000;
 
 export const DISPLAY_WIDTH = 64;
 export const DISPLAY_HEIGHT = 32;

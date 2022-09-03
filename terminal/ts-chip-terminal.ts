@@ -18,6 +18,7 @@ async function main() {
   const renderer = new TerminalRenderer({
     output: stdout,
     shouldLimitFrame: argv.mode === 'chip-8',
+    shouldDrawFps: argv.shouldDrawFps,
   });
   const sound = new TerminalSound(stdout);
   const input = new TerminalInput(stdin);
@@ -49,9 +50,15 @@ function getArgv() {
           'Choose a compatibility mode to run: chip-8 (default) or schip',
         default: 'chip-8',
       },
+      shouldDrawFps: {
+        alias: 'f',
+        type: 'boolean',
+        description: 'Should draw FPS',
+        default: false,
+      },
     })
     .usage(
-      'Chip-ts\nA Chip-8 and Super Chip-48 interpreter written in TypeScript',
+      'ts-chip\nA Chip-8 and Super Chip-48 interpreter written in TypeScript',
     ).argv;
 }
 

@@ -3,6 +3,7 @@ import {
   DISPLAY_HEIGHT,
   DISPLAY_WIDTH,
   FRAME_TIME_IN_MS,
+  ONE_SECOND_IN_MS,
 } from '../lib/constants.js';
 import { delay, mod } from '../lib/utils.js';
 import { WriteStream } from 'tty';
@@ -14,27 +15,34 @@ export interface TerminalRendererParams {
   output: WriteStream;
   scaleFactor?: number;
   shouldLimitFrame?: boolean;
+  shouldDrawFps?: boolean;
 }
 
 export class TerminalRenderer implements Renderer {
   output: WriteStream;
   scaleFactor: number;
   shouldLimitFrame: boolean;
+  shouldDrawFps: boolean;
   cursorTo: (x: number, y?: number) => Promise<void>;
   clearScreenDown: () => Promise<void>;
   write: (text: string) => Promise<void>;
   rl: any;
   previousDisplay = createDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   previousTimestamp = Date.now();
+  fpsCounter = 0;
+  fpsTimestamp = Date.now();
 
   constructor({
     output,
     scaleFactor = 2,
-    shouldLimitFrame = true,
+    shouldLimitFrame = false,
+    shouldDrawFps = false,
   }: TerminalRendererParams) {
     this.output = output;
     this.scaleFactor = scaleFactor;
     this.shouldLimitFrame = shouldLimitFrame;
+    this.shouldDrawFps = shouldDrawFps;
+
     this.cursorTo = promisify(output.cursorTo).bind(output);
     this.clearScreenDown = promisify(output.clearScreenDown).bind(output);
     this.write = promisify(output.write).bind(output);
@@ -58,6 +66,8 @@ export class TerminalRenderer implements Renderer {
     }
 
     await this.drawToScreen(display, diff);
+
+    await this.drawFps();
 
     this.previousDisplay = {
       ...display,
@@ -101,5 +111,27 @@ export class TerminalRenderer implements Renderer {
         await this.write(`\u001b[49m${toWrite}`);
       }
     }
+  }
+
+  private async drawFps() {
+    if (!this.shouldDrawFps) {
+      return;
+    }
+
+    this.fpsCounter++;
+
+    const now = Date.now();
+    const timeDifference = now - this.fpsTimestamp;
+
+    if (timeDifference < ONE_SECOND_IN_MS) {
+      return;
+    }
+
+    await this.cursorTo(0, 0);
+    await this.write(
+      `\u001b[107m${this.fpsCounter.toString().padStart(3, ' ')}FPS`,
+    );
+    this.fpsTimestamp = now;
+    this.fpsCounter = 0;
   }
 }
