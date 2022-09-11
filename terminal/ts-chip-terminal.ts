@@ -4,13 +4,13 @@ import { readFile } from 'fs/promises';
 import { stdin, stdout } from 'process';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { run } from '../lib/chip-ts.js';
+import { run } from '../lib/ts-chip.js';
 import { Chip8Vm } from '../lib/chip8-vm.js';
 import { SuperChip48Vm } from '../lib/super-chip48-vm.js';
 import { FileStorage } from './file-storage.js';
 import { TerminalInput } from './terminal-input.js';
 import { TerminalRenderer } from './terminal-renderer.js';
-import { TerminalSound } from './terminal-sound.js';
+import { TerminalAudio } from './terminal-audio.js';
 
 async function main() {
   const argv = await getArgv();
@@ -20,7 +20,7 @@ async function main() {
     shouldLimitFrame: argv.mode === 'chip-8',
     shouldDrawFps: argv.shouldDrawFps,
   });
-  const sound = new TerminalSound(stdout);
+  const audio = new TerminalAudio(stdout);
   const input = new TerminalInput(stdin);
   const consoleStream = createWriteStream(`${argv.load}.log`);
   const logger = new Console(consoleStream, consoleStream);
@@ -31,7 +31,7 @@ async function main() {
   const vmClass = argv.mode === 'chip-8' ? Chip8Vm : SuperChip48Vm;
   const vm = new vmClass({ program, input, logger, storage });
 
-  await run({ vm, renderer, sound });
+  await run({ vm, renderer, audio });
 }
 
 function getArgv() {

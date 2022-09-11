@@ -16,7 +16,7 @@ import {
   LARGE_FONT_DATA_START,
   MEMORY_SIZE,
 } from './constants.js';
-import { createDisplay } from './display.js';
+import { Display } from './display.js';
 import {
   doubleByte,
   getHigherNibble,
@@ -136,10 +136,7 @@ export class SuperChip48Vm extends Chip8Vm {
           continue;
         }
         const spriteValue = getNthBit(spriteByte, mod(dx, BYTE_LENGTH));
-        const isCurrentCollision = this.display.display.xor(
-          y * this.display.width + x,
-          spriteValue,
-        );
+        const isCurrentCollision = this.display.xorPixel(x, y, spriteValue);
         isCollision ||= isCurrentCollision;
       }
     }
@@ -171,14 +168,11 @@ export class SuperChip48Vm extends Chip8Vm {
   }
 
   lowResolution() {
-    this.display = createDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    this.display = new Display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   }
 
   highResolution() {
-    this.display = createDisplay(
-      HIGH_RES_DISPLAY_WIDTH,
-      HIGH_RES_DISPLAY_HEIGHT,
-    );
+    this.display = new Display(HIGH_RES_DISPLAY_WIDTH, HIGH_RES_DISPLAY_HEIGHT);
   }
 
   or(instruction: InstructionArray) {

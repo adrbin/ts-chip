@@ -1,24 +1,6 @@
 import { ReadStream } from 'tty';
 import { Input } from '../lib/chip8-vm.js';
-
-const keyMapping: { [key: string]: number } = {
-  '1': 1,
-  '2': 2,
-  '3': 3,
-  '4': 0xc,
-  q: 4,
-  w: 5,
-  e: 6,
-  r: 0xd,
-  a: 7,
-  s: 8,
-  d: 9,
-  f: 0xe,
-  z: 0xa,
-  x: 0,
-  c: 0xb,
-  v: 0xf,
-};
+import { KEY_MAPPING } from '../lib/constants.js';
 
 export class TerminalInput implements Input {
   input: ReadStream;
@@ -32,7 +14,7 @@ export class TerminalInput implements Input {
       if (charCode === 27) {
         process.exit();
       }
-      const pressedKey = keyMapping[String.fromCharCode(charCode)];
+      const pressedKey = KEY_MAPPING[String.fromCharCode(charCode)];
       if (pressedKey === undefined) {
         return;
       }
@@ -58,7 +40,7 @@ export class TerminalInput implements Input {
     return new Promise<number>(resolve => {
       const listener = (data: Buffer) => {
         const charCode = data.readUint8();
-        const pressedKey = keyMapping[String.fromCharCode(charCode)];
+        const pressedKey = KEY_MAPPING[String.fromCharCode(charCode)];
         if (pressedKey === undefined) {
           return;
         }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Pong!</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      border: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #game-canvas {
+      height: 50vh;
+      aspect-ratio: 2;
+      touch-action: none;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="game-canvas" />
+
+  <script>
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('/sw.js')
+    //     .then(function () {
+    //       console.log("Service worker registered");
+    //     });
+    // }
+  </script>
+  <script src="web/ts-chip-web.js" type="module"></script>
+</body>
+
+</html>

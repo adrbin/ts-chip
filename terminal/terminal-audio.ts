@@ -1,9 +1,9 @@
 import { WriteStream } from 'tty';
-import { Sound } from '../lib/chip-ts.js';
+import { Audio } from '../lib/ts-chip.js';
 
 const alertCharacter = String.fromCharCode(7);
 
-export class TerminalSound implements Sound {
+export class TerminalAudio implements Audio {
   output: WriteStream;
 
   constructor(output: WriteStream) {

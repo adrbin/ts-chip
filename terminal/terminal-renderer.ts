@@ -1,4 +1,4 @@
-import { Renderer } from '../lib/chip-ts.js';
+import { Renderer } from '../lib/ts-chip.js';
 import {
   DISPLAY_HEIGHT,
   DISPLAY_WIDTH,
@@ -8,8 +8,7 @@ import {
 import { delay, mod } from '../lib/utils.js';
 import { WriteStream } from 'tty';
 import { promisify } from 'util';
-import { createDisplay, Display } from '../lib/display.js';
-import { BitArray } from '../lib/bit-array.js';
+import { Display } from '../lib/display.js';
 
 export interface TerminalRendererParams {
   output: WriteStream;
@@ -27,10 +26,10 @@ export class TerminalRenderer implements Renderer {
   clearScreenDown: () => Promise<void>;
   write: (text: string) => Promise<void>;
   rl: any;
-  previousDisplay = createDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  previousDisplay = new Display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   previousTimestamp = Date.now();
-  fpsCounter = 0;
   fpsTimestamp = Date.now();
+  fpsCounter = 0;
 
   constructor({
     output,
@@ -56,23 +55,11 @@ export class TerminalRenderer implements Renderer {
 
   async draw(display: Display) {
     await this.checkDisplaySize(display);
-
-    const diff = display.display.diff(this.previousDisplay.display);
-
     await this.limitFrame();
-
-    if (diff.length === 0) {
-      return;
-    }
-
-    await this.drawToScreen(display, diff);
-
+    await this.drawDisplay(display);
     await this.drawFps();
 
-    this.previousDisplay = {
-      ...display,
-      display: BitArray.copy(display.display),
-    };
+    this.previousDisplay = display.copy();
   }
 
   private async checkDisplaySize(display: Display) {
@@ -80,7 +67,7 @@ export class TerminalRenderer implements Renderer {
       display.width !== this.previousDisplay.width ||
       display.height !== this.previousDisplay.height
     ) {
-      this.previousDisplay = createDisplay(display.width, display.height);
+      this.previousDisplay = new Display(display.width, display.height);
       await this.init();
     }
   }
@@ -97,12 +84,14 @@ export class TerminalRenderer implements Renderer {
     this.previousTimestamp = Date.now();
   }
 
-  private async drawToScreen(display: Display, diff: number[]) {
+  private async drawDisplay(display: Display) {
     const toWrite = ' '.repeat(this.scaleFactor);
 
+    const diff = display.display.diff(this.previousDisplay.display);
+
     for (const index of diff) {
-      const x = mod(index, display.width) * this.scaleFactor;
-      const y = Math.floor(index / display.width);
+      const x = display.getX(index) * this.scaleFactor;
+      const y = display.getY(index);
       await this.cursorTo(x, y);
 
       if (display.display.get(index) === 1) {
@@ -128,10 +117,12 @@ export class TerminalRenderer implements Renderer {
     }
 
     await this.cursorTo(0, 0);
-    await this.write(
-      `\u001b[107m${this.fpsCounter.toString().padStart(3, ' ')}FPS`,
-    );
+    await this.write(`\u001b[107m${this.formattedFpsCounter}FPS`);
     this.fpsTimestamp = now;
     this.fpsCounter = 0;
+  }
+
+  private get formattedFpsCounter() {
+    return this.fpsCounter.toString().padStart(3, ' ');
   }
 }

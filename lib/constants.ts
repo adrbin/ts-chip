@@ -26,3 +26,22 @@ export const FONT_DATA = [
 
 export const FONT_DATA_START = 0;
 export const LARGE_FONT_DATA_START = FONT_DATA.length;
+
+export const KEY_MAPPING: { [key: string]: number } = {
+  '1': 1,
+  '2': 2,
+  '3': 3,
+  '4': 0xc,
+  q: 4,
+  w: 5,
+  e: 6,
+  r: 0xd,
+  a: 7,
+  s: 8,
+  d: 9,
+  f: 0xe,
+  z: 0xa,
+  x: 0,
+  c: 0xb,
+  v: 0xf,
+};

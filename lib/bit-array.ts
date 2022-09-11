@@ -8,9 +8,9 @@ export class BitArray {
     this.array = new Uint8Array(Math.ceil(length));
   }
 
-  static copy(bitArray: BitArray) {
-    const newBitArray = new BitArray(bitArray.array.length);
-    newBitArray.array = new Uint8Array(bitArray.array);
+  copy() {
+    const newBitArray = new BitArray(this.array.length);
+    newBitArray.array = new Uint8Array(this.array);
 
     return newBitArray;
   }
@@ -55,11 +55,11 @@ export class BitArray {
     return differences;
   }
 
-  getIndexes(index: number) {
+  private getIndexes(index: number) {
     return [Math.floor(index / 8), mod(index, 8)];
   }
 
-  getValueWithSetBit(value: number, index: number, bit: number) {
+  private getValueWithSetBit(value: number, index: number, bit: number) {
     return bit === 1 ? value | (0x80 >> index) : value & ~(0x80 >> index);
   }
 }

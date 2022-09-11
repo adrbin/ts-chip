@@ -10,7 +10,7 @@ import {
   PROGRAM_START,
   REGISTER_COUNT,
 } from './constants.js';
-import { createDisplay } from './display.js';
+import { Display } from './display.js';
 import {
   getBcd,
   getHigherNibble,
@@ -45,12 +45,12 @@ export interface Input {
 }
 
 export interface Storage {
-  save: (data: any) => Promise<void>;
-  load: () => Promise<any>;
+  save: (data: any) => Promise<void> | void;
+  load: () => Promise<any> | any;
 }
 
 export interface VmParams {
-  program: Buffer;
+  program: Uint8Array;
   input: Input;
   logger?: Console;
   storage?: Storage;
@@ -58,7 +58,7 @@ export interface VmParams {
 
 export class Chip8Vm {
   memory = new Uint8Array(MEMORY_SIZE);
-  display = createDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  display = new Display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   registers = new Uint8Array(REGISTER_COUNT);
   registerI = 0;
   delayTimer = 0;
@@ -129,7 +129,7 @@ export class Chip8Vm {
     }
 
     for (let i = 0; i < program.length; i++) {
-      this.memory[PROGRAM_START + i] = program.readUint8(i);
+      this.memory[PROGRAM_START + i] = program[i];
     }
 
     this.input = input;
@@ -175,7 +175,7 @@ export class Chip8Vm {
   }
 
   clear() {
-    this.display = createDisplay(this.display.width, this.display.height);
+    this.display = new Display(this.display.width, this.display.height);
   }
 
   return() {
@@ -342,10 +342,7 @@ export class Chip8Vm {
           continue;
         }
         const spriteValue = getNthBit(spriteByte, dx);
-        const isCurrentCollision = this.display.display.xor(
-          y * this.display.width + x,
-          spriteValue,
-        );
+        const isCurrentCollision = this.display.xorPixel(x, y, spriteValue);
         isCollision ||= isCurrentCollision;
       }
     }

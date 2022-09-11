@@ -4,11 +4,11 @@ import { Chip8Vm } from './chip8-vm.js';
 import { Display } from './display.js';
 
 export interface Renderer {
-  init: () => Promise<void>;
-  draw: (display: Display) => Promise<void>;
+  init: () => Promise<void> | void;
+  draw: (display: Display) => Promise<void> | void;
 }
 
-export interface Sound {
+export interface Audio {
   play: () => void;
   stop: () => void;
 }
@@ -16,10 +16,10 @@ export interface Sound {
 export interface ChipTsParams {
   vm: Chip8Vm;
   renderer: Renderer;
-  sound: Sound;
+  audio: Audio;
 }
 
-export async function run({ vm, renderer, sound }: ChipTsParams) {
+export async function run({ vm, renderer, audio }: ChipTsParams) {
   await renderer.init();
 
   setInterval(() => {
@@ -28,11 +28,11 @@ export async function run({ vm, renderer, sound }: ChipTsParams) {
     }
 
     if (vm.soundTimer === 1) {
-      sound.stop();
+      audio.stop();
     }
 
     if (vm.soundTimer > 0) {
-      sound.play();
+      audio.play();
       vm.soundTimer--;
     }
   }, FRAME_TIME_IN_MS);
