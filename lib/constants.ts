@@ -7,6 +7,8 @@ export const FLAG_REGISTER = REGISTER_COUNT - 1;
 export const FPS = 60;
 export const FRAME_TIME_IN_MS = Math.ceil(1000 / FPS);
 export const ONE_SECOND_IN_MS = 1000;
+export const INPUT_DELAY = 100;
+export const DELAY_FACTOR = 10;
 
 export const DISPLAY_WIDTH = 64;
 export const DISPLAY_HEIGHT = 32;
@@ -45,3 +47,20 @@ export const KEY_MAPPING: { [key: string]: number } = {
   c: 0xb,
   v: 0xf,
 };
+
+export const ROMS = [
+  'roms/chip-8/chip8-test-suite.ch8',
+  'roms/chip-8/1dcell.ch8',
+  'roms/chip-8/flightrunner.ch8',
+  'roms/chip-8/pumpkindressup.ch8',
+  'roms/chip-8/RPS.ch8',
+  'roms/chip-8/snake.ch8',
+  'roms/schip/blackrainbow.ch8',
+  'roms/schip/dodge.ch8',
+  'roms/schip/eaty.ch8',
+  'roms/schip/mondrian.ch8',
+  'roms/schip/octogon.ch8',
+  'roms/schip/rockto.ch8',
+  'roms/schip/sens8tion.ch8',
+  'roms/schip/sub8.ch8',
+];

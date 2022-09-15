@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises';
 import { stdin, stdout } from 'process';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { run } from '../lib/ts-chip.js';
+import { VmRunner } from '../lib/vm-runner.js';
 import { Chip8Vm } from '../lib/chip8-vm.js';
 import { SuperChip48Vm } from '../lib/super-chip48-vm.js';
 import { FileStorage } from './file-storage.js';
@@ -31,7 +31,8 @@ async function main() {
   const vmClass = argv.mode === 'chip-8' ? Chip8Vm : SuperChip48Vm;
   const vm = new vmClass({ program, input, logger, storage });
 
-  await run({ vm, renderer, audio });
+  const vmRunner = new VmRunner({ vm, renderer, audio });
+  await vmRunner.run();
 }
 
 function getArgv() {

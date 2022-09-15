@@ -1,4 +1,4 @@
-import { Renderer } from '../lib/ts-chip.js';
+import { Renderer } from '../lib/vm-runner.js';
 import {
   DISPLAY_HEIGHT,
   DISPLAY_WIDTH,
@@ -54,8 +54,8 @@ export class TerminalRenderer implements Renderer {
   }
 
   async draw(display: Display) {
-    await this.checkDisplaySize(display);
     await this.limitFrame();
+    await this.checkDisplaySize(display);
     await this.drawDisplay(display);
     await this.drawFps();
 

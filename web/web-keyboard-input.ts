@@ -1,8 +1,10 @@
 import { Input } from '../lib/chip8-vm.js';
-import { KEY_MAPPING } from '../lib/constants.js';
+import { INPUT_DELAY, KEY_MAPPING } from '../lib/constants.js';
+import { delay } from '../lib/utils.js';
 
 export class WebKeyboardInput implements Input {
   pressedKeys = new Set<number>();
+  waitListener?: (event: KeyboardEvent) => void;
 
   constructor() {
     window.addEventListener('keydown', event => {
@@ -14,11 +16,13 @@ export class WebKeyboardInput implements Input {
       this.pressedKeys.add(pressedKey);
     });
 
-    window.addEventListener('keyup', event => {
+    window.addEventListener('keyup', async event => {
       const pressedKey = KEY_MAPPING[event.key];
       if (pressedKey === undefined) {
         return;
       }
+
+      await delay(INPUT_DELAY);
 
       this.pressedKeys.delete(pressedKey);
     });
@@ -30,17 +34,25 @@ export class WebKeyboardInput implements Input {
 
   waitInput() {
     return new Promise<number>(resolve => {
-      const listener = (event: KeyboardEvent) => {
+      this.waitListener = (event: KeyboardEvent) => {
         const pressedKey = KEY_MAPPING[event.key];
         if (pressedKey === undefined) {
           return;
         }
 
-        window.removeEventListener('keypress', listener);
+        this.cancelWait();
         resolve(pressedKey);
       };
 
-      window.addEventListener('keypress', listener);
+      window.addEventListener('keypress', this.waitListener);
     });
+  }
+
+  cancelWait() {
+    if (this.waitListener) {
+      window.removeEventListener('keypress', this.waitListener);
+    }
+
+    this.waitListener = undefined;
   }
 }

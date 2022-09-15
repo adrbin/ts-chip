@@ -20,7 +20,7 @@ import {
   joinNibbles,
   matchInstruction,
   mod,
-  toHex,
+  nibblesToHex,
 } from './utils.js';
 
 export type InstructionArray = [number, number, number, number];
@@ -38,10 +38,12 @@ export type InstructionCondition = [
 
 export type InputCallback = () => Set<number>;
 export type WaitInputCallback = () => Promise<number>;
+export type CancelWaitInputCallback = () => void;
 
 export interface Input {
   getInput: InputCallback;
   waitInput: WaitInputCallback;
+  cancelWait: CancelWaitInputCallback;
 }
 
 export interface Storage {
@@ -143,7 +145,7 @@ export class Chip8Vm {
       this.operations.find(([condition]) => condition(instruction)) ?? [];
 
     if (!operation) {
-      this.logger?.warn('Unknown instruction: ', toHex(instruction));
+      this.logger?.warn('Unknown instruction: ', nibblesToHex(instruction));
       return;
     }
 

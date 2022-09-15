@@ -5,6 +5,7 @@ import { KEY_MAPPING } from '../lib/constants.js';
 export class TerminalInput implements Input {
   input: ReadStream;
   pressedKeys = new Map<number, number>();
+  waitListener?: (data: Buffer) => void;
 
   constructor(input: ReadStream) {
     this.input = input;
@@ -15,6 +16,7 @@ export class TerminalInput implements Input {
         process.exit();
       }
       const pressedKey = KEY_MAPPING[String.fromCharCode(charCode)];
+      console.log(pressedKey);
       if (pressedKey === undefined) {
         return;
       }
@@ -38,19 +40,27 @@ export class TerminalInput implements Input {
 
   waitInput() {
     return new Promise<number>(resolve => {
-      const listener = (data: Buffer) => {
+      this.waitListener = (data: Buffer) => {
         const charCode = data.readUint8();
         const pressedKey = KEY_MAPPING[String.fromCharCode(charCode)];
         if (pressedKey === undefined) {
           return;
         }
 
-        this.input.removeListener('data', listener);
+        this.cancelWait();
         this.pressedKeys = new Map<number, number>();
         resolve(pressedKey);
       };
 
-      this.input.on('data', listener);
+      this.input.on('data', this.waitListener);
     });
+  }
+
+  cancelWait() {
+    if (this.waitListener) {
+      this.input.removeListener('data', this.waitListener);
+    }
+
+    this.waitListener = undefined;
   }
 }

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="manifest" href="manifest.webmanifest">
-  <title>Pong!</title>
+  <title>ts-chip</title>
   <style>
     html,
     body {
@@ -17,16 +17,178 @@
       touch-action: none;
     }
 
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      max-width: 700px;
+      height: 100vh;
+    }
+
     #game-canvas {
-      height: 50vh;
       aspect-ratio: 2;
       touch-action: none;
+      width: 100%;
+      max-height: 50%;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      width: 100%;
+      height: 100%;
+    }
+    
+    button, select, .rom-label {
+      color: rgb(29, 152, 229);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      width: 100%;
+      font-size: 18px;
+      margin: 10px;
+    }
+
+    #rom-file-input {
+      display: none;
+      font-size: 1em;
+    }
+
+    .rom-label, .controls button, .controls select {
+      padding: 5px 10px;
+      background-color: rgb(244, 244, 244);
+      border: 1px ridge black;
+      height: auto;
+      margin-left: 5px;
+      margin-right: 5px;
+      margin-top: 2px;
+      font-size: 1em;
+      width: auto;
+    }
+
+    .rom-label {
+      text-align: center;
+      margin-bottom: 2px;
+    }
+
+    .controls label {
+      font-size: 1em;
+      margin-left: 3px;
+    }
+
+    .checkbox-container {
+      margin-top: 8px;
+    }
+
+    .rom-label:hover, .controls button:hover {
+      background-color: rgb(219, 219, 219);
+    }
+
+    .rom-label:active, .controls button:active {
+      background-color: rgb(205, 205, 205);
+    }
+
+    button {
+      font-size: 18px;
     }
   </style>
 </head>
 
 <body>
-  <canvas id="game-canvas" />
+  <div class="main-container">
+    <canvas id="game-canvas"></canvas>
+    <section class="controls">
+      <div>
+        <label for="rom-select">ROM</label>
+        <select id="rom-select">
+        </select>
+      </div>
+
+      <div>
+        <label for="mode-select">Mode</label>
+        <select id="mode-select">
+          <option value="chip-8">Chip-8</option>
+          <option value="schip">Schip</option>
+        </select>
+      </div>
+
+      <div class="checkbox-container">
+        <label for="fps-checkbox">Show FPS</label>
+        <input type="checkbox" id="fps-checkbox">
+      </div>
+
+      <label for="rom-file-input" class="rom-label">Upload a rom</label>
+      <input type="file" id="rom-file-input">
+
+      <button id="start-button">
+        Start
+      </button>
+      <button id="pause-button">
+        Pause
+      </button>
+    </section>
+    <section class="buttons">
+      <button id="button-1" type="button">
+        1
+      </button>
+      <button id="button-2" type="button">
+        2
+      </button>
+      <button id="button-3" type="button">
+        3
+      </button>
+      <button id="button-C" type="button">
+        C
+      </button>
+      <button id="button-4" type="button">
+        4
+      </button>
+      <button id="button-5" type="button">
+        5
+      </button>
+      <button id="button-6" type="button">
+        6
+      </button>
+      <button id="button-D" type="button">
+        D
+      </button>
+      <button id="button-7" type="button">
+        7
+      </button>
+      <button id="button-8" type="button">
+        8
+      </button>
+      <button id="button-9" type="button">
+        9
+      </button>
+      <button id="button-E" type="button">
+        E
+      </button>
+      <button id="button-A" type="button">
+        A
+      </button>
+      <button id="button-0" type="button">
+        0
+      </button>
+      <button id="button-B" type="button">
+        B
+      </button>
+      <button id="button-F" type="button">
+        F
+      </button>
+    </section>
+  </div>
 
   <script>
     // if ('serviceWorker' in navigator) {

@@ -1,4 +1,4 @@
-import { Renderer } from '../lib/ts-chip.js';
+import { Renderer } from '../lib/vm-runner.js';
 import {
   DISPLAY_HEIGHT,
   DISPLAY_WIDTH,
@@ -29,10 +29,10 @@ export class WebRenderer implements Renderer {
 
   constructor({
     canvas,
-    shouldLimitFrame = true,
-    shouldDrawFps = true,
+    shouldLimitFrame = false,
+    shouldDrawFps = false,
   }: WebRendererParams) {
-    canvas.addEventListener('resize', () => (this.shouldRedraw = true));
+    window.addEventListener('resize', () => (this.shouldRedraw = true));
     this.canvas = canvas;
 
     const ctx = canvas.getContext('2d');
@@ -46,6 +46,7 @@ export class WebRenderer implements Renderer {
   }
 
   init() {
+    this.shouldRedraw = true;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
@@ -77,8 +78,8 @@ export class WebRenderer implements Renderer {
       display.height !== this.previousDisplay.height
     ) {
       this.previousDisplay = new Display(display.width, display.height);
-      this.shouldRedraw = false;
       this.init();
+      this.shouldRedraw = false;
     }
   }
 
@@ -114,9 +115,8 @@ export class WebRenderer implements Renderer {
       return;
     }
 
-    const textMetrics = this.ctx.measureText(this.formattedFpsCounter);
     this.ctx.fillStyle = 'blue';
-    this.ctx.fillRect(0, 0, textMetrics.width, TEXT_HEIGHT);
+    this.ctx.fillRect(0, 0, 20, TEXT_HEIGHT + 3);
     this.ctx.fillStyle = 'white';
     this.ctx.font = `${TEXT_HEIGHT}px sans-serif`;
     this.ctx.fillText(this.formattedFpsCounter, 0, TEXT_HEIGHT);

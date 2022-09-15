@@ -12,10 +12,14 @@ export function getLowerNibble(byte: number) {
   return byte & 0xf;
 }
 
-export function toHex(nibbles: number[]) {
+export function nibblesToHex(nibbles: number[]) {
   return `0x${nibbles
     .map(nibble => nibble.toString(16).toUpperCase())
     .join('')}`;
+}
+
+export function toHex(value: number) {
+  return value.toString(16).toUpperCase();
 }
 
 export function joinNibbles(nibbles: number[]) {
