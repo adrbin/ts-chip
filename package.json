@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node dist/terminal/ts-chip-terminal.js",
-    "build": "cp static/* dist && tsc"
+    "build": "cp static/* dist && cp -r roms dist && tsc"
   },
   "author": "adrbin",
   "license": "ISC",
