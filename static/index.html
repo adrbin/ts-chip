@@ -191,12 +191,12 @@
   </div>
 
   <script>
-    // if ('serviceWorker' in navigator) {
-    //   navigator.serviceWorker.register('/sw.js')
-    //     .then(function () {
-    //       console.log("Service worker registered");
-    //     });
-    // }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(function () {
+          console.log("Service worker registered");
+        });
+    }
   </script>
   <script src="web/ts-chip-web.js" type="module"></script>
 </body>

@@ -1,6 +1,6 @@
 {
-  "name": "Pong!",
-  "short_name": "Pong!",
+  "name": "ts-chip",
+  "short_name": "ts-chip",
   "start_url": "/index.html",
   "display": "standalone",
   "theme_color": "#ffffff",
