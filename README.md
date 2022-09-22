@@ -1,3 +1,7 @@
+# ts-chip
+
+A Chip-8 and Super Chip-48 interpreter written in TypeScript
+
 Links:
 
 - http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
