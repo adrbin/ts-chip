@@ -9,7 +9,6 @@ FROM node:18-alpine
 WORKDIR /app
 ENV NO_UPDATE_NOTIFIER=true
 COPY package*.json .
-COPY roms roms
 COPY --from=build /app/dist dist
 RUN npm ci --only=production
 ENTRYPOINT [ "npm", "run", "start", "--" ]

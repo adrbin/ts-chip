@@ -42,7 +42,7 @@ function getArgv() {
         alias: 'l',
         type: 'string',
         description: 'Load a rom',
-        default: 'roms/chip-8/chip8-test-suite.ch8',
+        default: 'dist/roms/chip-8/chip8-test-suite.ch8',
       },
       mode: {
         alias: 'm',
