@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "node dist/terminal/ts-chip-terminal.js",
+    "start:web": "http-server dist -c-1",
     "build": "mkdir -p dist && cp static/* dist && cp -r roms dist && tsc"
   },
   "author": "adrbin",
-  "license": "ISC",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@types/node": "^18.6.2",
     "@types/yargs": "^17.0.11",

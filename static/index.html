@@ -102,6 +102,18 @@
     button {
       font-size: 18px;
     }
+
+    @media (max-height: 500px) and (orientation: landscape) {
+      .main-container {
+        flex-direction: row;
+        max-width: none;
+      }
+
+      .controls {
+        grid-template-columns: none;
+        grid-template-rows: repeat(3, 1fr);
+      }
+    }
   </style>
 </head>
 
