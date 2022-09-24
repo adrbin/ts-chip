@@ -21,6 +21,7 @@ const romCache: Record<string, Uint8Array> = {};
 let romFileInput: HTMLInputElement;
 let modeSelect: HTMLSelectElement;
 let fpsCheckbox: HTMLInputElement;
+let fpsText: HTMLElement;
 let pauseButton: HTMLButtonElement;
 
 async function main() {
@@ -38,6 +39,7 @@ async function main() {
     canvas,
     shouldLimitFrame: isChip8mode,
     shouldDrawFps: fpsCheckbox.checked,
+    fpsText,
   });
 
   const keyboardInput = new WebKeyboardInput();
@@ -116,6 +118,11 @@ function initUi() {
   }
 
   fpsCheckbox.addEventListener('change', drawFps);
+
+  fpsText = document.getElementById('fps-text') as HTMLInputElement;
+  if (!fpsText) {
+    throw new Error(`Show FPS text has not been found`);
+  }
 
   pauseButton = document.getElementById('pause-button') as HTMLButtonElement;
   if (!pauseButton) {

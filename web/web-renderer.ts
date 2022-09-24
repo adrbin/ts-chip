@@ -8,12 +8,11 @@ import {
 import { Display } from '../lib/display.js';
 import { delay } from '../lib/utils.js';
 
-const TEXT_HEIGHT = 12;
-
 export interface WebRendererParams {
   canvas: HTMLCanvasElement;
   shouldLimitFrame?: boolean;
   shouldDrawFps?: boolean;
+  fpsText?: HTMLElement;
 }
 
 export class WebRenderer implements Renderer {
@@ -21,6 +20,7 @@ export class WebRenderer implements Renderer {
   ctx: CanvasRenderingContext2D;
   shouldLimitFrame: boolean;
   shouldDrawFps: boolean;
+  fpsText?: HTMLElement;
   previousDisplay = new Display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
   previousTimestamp = Date.now();
   fpsTimestamp = Date.now();
@@ -31,6 +31,7 @@ export class WebRenderer implements Renderer {
     canvas,
     shouldLimitFrame = false,
     shouldDrawFps = false,
+    fpsText = undefined,
   }: WebRendererParams) {
     window.addEventListener('resize', () => (this.shouldRedraw = true));
     this.canvas = canvas;
@@ -43,6 +44,12 @@ export class WebRenderer implements Renderer {
 
     this.shouldLimitFrame = shouldLimitFrame;
     this.shouldDrawFps = shouldDrawFps;
+    if (shouldDrawFps && !fpsText) {
+      throw new Error(
+        'shouldDrawFps has been set to true so fpsText also needs to be provided.',
+      );
+    }
+    this.fpsText = fpsText;
   }
 
   init() {
@@ -115,11 +122,7 @@ export class WebRenderer implements Renderer {
       return;
     }
 
-    this.ctx.fillStyle = 'blue';
-    this.ctx.fillRect(0, 0, 20, TEXT_HEIGHT + 3);
-    this.ctx.fillStyle = 'white';
-    this.ctx.font = `${TEXT_HEIGHT}px sans-serif`;
-    this.ctx.fillText(this.formattedFpsCounter, 0, TEXT_HEIGHT);
+    this.fpsText!.textContent = this.formattedFpsCounter;
 
     this.fpsTimestamp = now;
     this.fpsCounter = 0;
